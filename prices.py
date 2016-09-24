@@ -66,6 +66,8 @@ def main():
                 name = split[1].split(">")[-1]
                 base = split[2]
 
+                print name, base
+
                 prices = format_prices(get_prices("%s %s" % (name, base)))
 
                 notify(name, prices)
