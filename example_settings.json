@@ -1,0 +1,10 @@
+{
+    "league": "Breach",
+    "headers": {
+        "headerA": "data"
+    },
+    "cookies": {
+        "cookieA":"data",
+        "cookieB":"more data"
+    }
+}
