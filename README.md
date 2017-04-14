@@ -7,6 +7,7 @@ Pressing ctrl-c in game while hovering over an item will copy the item's stats t
 * Checking the price of Unique items on [poe.trade](http://poe.trade/).
 * Checking the price of Divination Cards.
 * Calculating the damage per second (DPS) of a weapon. This is reported as total DPS, elemental DPS (eDPS), and chaos DPS (cDPS).
+* Seeing what map results from vendoring three of a given map (and what maps vendor into it).
 
 Program settings are loaded from a file called `settings.json`, where you can specify which league to check prices in, and any extra headers or cookies to add to requests. If not specified, the league defaults to Standard. An example settings file is included called `example_settings.json`.
 
