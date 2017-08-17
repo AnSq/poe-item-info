@@ -11,16 +11,18 @@ from pyquery import PyQuery as pq
 
 settings = {}
 
-max_shown = 5
+MAX_SHOWN = 5
 
-default_data = {
+DEFAULT_DATA = {
     "league": "",
     "name": "",
     "online": "x",
     "capquality": "x",
 }
 
-map_string = "Travel to this Map by using it in the Eternal Laboratory or a personal Map Device. Maps can only be used once."
+GEM_MIN_LEVEL = 18
+
+MAP_STRING = "Travel to this Map by using it in the Templar Laboratory or a personal Map Device. Maps can only be used once."
 
 maps = {
     'Abyss Map': 'Maze of the Minotaur Map',
@@ -146,14 +148,17 @@ def notify(title, body="", timeout=8000):
     subprocess.call(["notify-send", "-t", str(timeout), title, body])
 
 
-def get_prices(name):
+def get_prices(name, **kwargs):
     league = settings["league"] if "league" in settings else "Standard"
     headers = settings["headers"] if "headers" in settings else {}
     cookies = settings["cookies"] if "cookies" in settings else {}
 
-    data = dict(default_data)
+    data = dict(DEFAULT_DATA)
     data["league"] = league
     data["name"] = name
+
+    for k in kwargs:
+        data[k] = kwargs[k]
 
     r = requests.post("http://poe.trade/search", data=data, headers=headers, cookies=cookies)
 
@@ -172,10 +177,10 @@ def get_prices(name):
 def format_prices(prices):
     result = "%d%s offers\n" % (len(prices), "+" if len(prices)==99 else "")
     result += "-"*20 + "\n"
-    for p in prices[:max_shown]:
+    for p in prices[:MAX_SHOWN]:
         result += "%s %s\n" % (p[1], p[0])
     result += u"⋮\n"
-    for p in prices[-max_shown:]:
+    for p in prices[-MAX_SHOWN:]:
         result += "%s %s\n" % (p[1], p[0])
     return result.strip()
 
@@ -296,7 +301,7 @@ def main():
     while True:
         clip = get_clipboard()
         if clip != prev_clip:
-            if ("\n--------\n" in clip) and (not unidentified(clip) or (map_string in clip)):
+            if ("\n--------\n" in clip) and (not unidentified(clip) or (MAP_STRING in clip)):
                 split = clip.split("\n")
                 name = split[1].split(">")[-1]
                 base = split[2]
@@ -304,13 +309,20 @@ def main():
                 if (not unique(clip) and not rare(clip)) or (rare(clip) and unidentified(clip)):
                     base = name
 
-                divcard = False
                 if "Rarity: Divination Card\n" in clip:
                     divcard = True
                     base = "- Divination Card"
+                else:
+                    divcard = False
+
+                if "Rarity: Gem\n" in clip:
+                    gem = True
+                    base = " (if level 18+)"
+                else:
+                    gem = False
 
                 map_item = False
-                if map_string in clip:
+                if MAP_STRING in clip:
                     map_item = True
                     base = base.replace("Superior ", "")
                     name = name.replace("Superior ", "")
@@ -330,6 +342,8 @@ def main():
                     prices = format_prices(get_prices(fullname))
                 elif divcard:
                     prices = format_prices(get_prices(name))
+                elif gem:
+                    prices = format_prices(get_prices(name, level_min=GEM_MIN_LEVEL))
 
                 body = ""
                 if dps_fmt and prices:
